@@ -1,0 +1,51 @@
+Procedimento para execução do PAM( Business Central ) de forma local, utilizando uma imagem Docker\Podman.
+
+--
+1 - Criar arquivo "Dockerfile" e colar o conteúdo abaixo.
+
+        ## BAIXAR IMAGEM DO PAM
+
+        FROM registry.redhat.io/rhpam-7/rhpam-businesscentral-rhel8
+
+        ## UTILIZAR USUÁRIO 185
+
+         USER 185
+
+        ## CRIAR USUÁRIO E SENHA PARA ADMINISTRAÇÃO DO AMBIENTE
+
+        RUN $JBOSS_HOME/bin/add-user.sh -a -r ApplicationRealm -u pamAdmin -p redhatpam1! -ro analyst,admin,manager,user,kie-server,kiemgmt,rest-all --silent
+        RUN $JBOSS_HOME/bin/add-user.sh -a -r ApplicationRealm -u adminUser -p test1234! -ro analyst,admin,manager,user,kie-server,kiemgmt,rest-all --silent
+        RUN $JBOSS_HOME/bin/add-user.sh -a -r ApplicationRealm -u kieserver -p kieserver1! -ro kie-server,rest-all --silent
+        RUN $JBOSS_HOME/bin/add-user.sh -a -r ApplicationRealm -u caseUser -p redhatpam1! -ro user --silent
+        RUN $JBOSS_HOME/bin/add-user.sh -a -r ApplicationRealm -u caseManager -p redhatpam1! -ro user,manager --silent
+        RUN $JBOSS_HOME/bin/add-user.sh -a -r ApplicationRealm -u caseSupplier -p redhatpam1! -ro user,supplier --silent
+
+        ## EXPORTAR PORTAS DEFAULT PARA ACESSO AO PAM
+
+        EXPOSE 8080
+        EXPOSE 8001
+        EXPOSE 8443
+        EXPOSE 8778
+
+
+2 - Executar o login no repositório
+
+        docker login registry.redhat.io
+
+3 - Realizar o Build da imagem
+
+        docker build -t=dev/pam-businesscentral .
+
+4 - Executar o Container
+
+        docker run -dt -p 8080:8080 -p 8001:8001 -p 8443:8443 -p 8778:8778 "ID_DO_CONTAINER"
+
+5 - Acessar a URL abaixo, com o usuário e senha Criado.
+
+        http://localhost:8080/kie-wb.jsp
+        Usuário:  pamAdmin
+        Senha: redhatpam1!
+
+6 - Referência
+
+        https://catalog.redhat.com/software/containers/rhpam-7/rhpam-businesscentral-rhel8/5db03a9fd70cc516448bdd1e?container-tabs=overview
